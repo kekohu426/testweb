@@ -2,13 +2,1103 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>Hello</title>
-  <style>
-    body { font-family: sans-serif; text-align: center; margin-top: 100px; }
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>家庭财务助手 - 智能家庭会计应用</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- 引入Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <!-- 配置Tailwind -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#36D399',
+            warning: '#FF9F43',
+            danger: '#F87171',
+            neutral: {
+              100: '#F3F4F6',
+              200: '#E5E7EB',
+              300: '#D1D5DB',
+              400: '#9CA3AF',
+              500: '#6B7280',
+              600: '#4B5563',
+              700: '#374151',
+              800: '#1F2937',
+              900: '#111827'
+            }
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .card-shadow {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+      .card-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+      .gradient-bg {
+        background: linear-gradient(135deg, #165DFF 0%, #0A42D1 100%);
+      }
+      .input-focus {
+        @apply focus:ring-2 focus:ring-primary/50 focus:border-primary focus:outline-none;
+      }
+      .animate-fade-in {
+        animation: fadeIn 0.5s ease-in-out;
+      }
+      .animate-slide-up {
+        animation: slideUp 0.5s ease-out;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes slideUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+    }
   </style>
 </head>
-<body>
-  <h1>部署成功 🎉</h1>
-  <p>这是我的第一个 GitHub + Vercel 网站</p>
+<body class="font-inter bg-neutral-100 text-neutral-800 min-h-screen flex flex-col">
+  <!-- 导航栏 -->
+  <header class="gradient-bg text-white shadow-md transition-all duration-300">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <i class="fa fa-home text-2xl"></i>
+        <h1 class="text-xl md:text-2xl font-bold">家庭财务助手</h1>
+      </div>
+      <nav class="hidden md:flex items-center space-x-6">
+        <a href="#dashboard" class="hover:text-neutral-200 transition-colors duration-200"><i class="fa fa-dashboard mr-1"></i> 仪表盘</a>
+        <a href="#transactions" class="hover:text-neutral-200 transition-colors duration-200"><i class="fa fa-exchange mr-1"></i> 交易记录</a>
+        <a href="#budget" class="hover:text-neutral-200 transition-colors duration-200"><i class="fa fa-pie-chart mr-1"></i> 预算分析</a>
+        <a href="#settings" class="hover:text-neutral-200 transition-colors duration-200"><i class="fa fa-cog mr-1"></i> 设置</a>
+      </nav>
+      <button class="md:hidden text-white text-xl" id="mobile-menu-button">
+        <i class="fa fa-bars"></i>
+      </button>
+    </div>
+    <!-- 移动端菜单 -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white text-neutral-800 shadow-lg animate-fade-in">
+      <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+        <a href="#dashboard" class="py-2 hover:text-primary transition-colors duration-200"><i class="fa fa-dashboard mr-2"></i> 仪表盘</a>
+        <a href="#transactions" class="py-2 hover:text-primary transition-colors duration-200"><i class="fa fa-exchange mr-2"></i> 交易记录</a>
+        <a href="#budget" class="py-2 hover:text-primary transition-colors duration-200"><i class="fa fa-pie-chart mr-2"></i> 预算分析</a>
+        <a href="#settings" class="py-2 hover:text-primary transition-colors duration-200"><i class="fa fa-cog mr-2"></i> 设置</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主内容区 -->
+  <main class="flex-grow container mx-auto px-4 py-8">
+    <!-- 欢迎消息 -->
+    <div class="mb-8 animate-fade-in">
+      <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-neutral-800">您好，家庭成员</h2>
+      <p class="text-neutral-600 mt-1">今天是 <span id="current-date" class="font-medium"></span>，让我们管理您的家庭财务</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- 左侧：输入区域 -->
+      <div class="lg:col-span-1 space-y-6">
+        <!-- 费用输入卡片 -->
+        <div class="bg-white rounded-xl shadow-lg p-6 card-shadow card-hover animate-slide-up" style="animation-delay: 0.1s">
+          <h3 class="text-xl font-bold text-neutral-800 mb-4 flex items-center">
+            <i class="fa fa-plus-circle text-primary mr-2"></i>记录新费用
+          </h3>
+          
+          <form id="expense-form" class="space-y-4">
+            <!-- 金额输入 -->
+            <div>
+              <label for="amount" class="block text-sm font-medium text-neutral-700 mb-1">金额 (¥)</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-500">¥</span>
+                <input type="number" id="amount" step="0.01" min="0" 
+                  class="w-full pl-8 pr-3 py-2 border border-neutral-300 rounded-lg input-focus transition-all duration-200"
+                  placeholder="输入金额" required>
+              </div>
+            </div>
+            
+            <!-- 描述输入 -->
+            <div>
+              <label for="description" class="block text-sm font-medium text-neutral-700 mb-1">描述</label>
+              <input type="text" id="description" 
+                class="w-full px-3 py-2 border border-neutral-300 rounded-lg input-focus transition-all duration-200"
+                placeholder="例如：购买 groceries">
+            </div>
+            
+            <!-- 语音输入按钮 -->
+            <div class="flex items-center">
+              <button type="button" id="voice-input-btn" 
+                class="flex items-center space-x-2 px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors duration-200">
+                <i class="fa fa-microphone"></i>
+                <span>语音输入</span>
+              </button>
+              <span id="voice-status" class="ml-3 text-sm text-neutral-500 hidden">正在聆听...</span>
+            </div>
+            
+            <!-- 分类选择 -->
+            <div>
+              <label for="category" class="block text-sm font-medium text-neutral-700 mb-1">分类</label>
+              <select id="category" 
+                class="w-full px-3 py-2 border border-neutral-300 rounded-lg input-focus transition-all duration-200 appearance-none bg-white"
+                required>
+                <option value="">选择分类</option>
+                <option value="food">食品</option>
+                <option value="transport">交通</option>
+                <option value="healthcare">医疗保健</option>
+                <option value="utilities">公用事业</option>
+                <option value="subscriptions">数字订阅</option>
+                <option value="household">家居用品</option>
+                <option value="entertainment">娱乐</option>
+                <option value="other">其他</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                <i class="fa fa-chevron-down text-neutral-400"></i>
+              </div>
+            </div>
+            
+            <!-- 家庭成员选择 -->
+            <div>
+              <label for="member" class="block text-sm font-medium text-neutral-700 mb-1">家庭成员</label>
+              <select id="member" 
+                class="w-full px-3 py-2 border border-neutral-300 rounded-lg input-focus transition-all duration-200">
+                <option value="me">我</option>
+                <option value="spouse">配偶</option>
+                <option value="child1">孩子1</option>
+                <option value="child2">孩子2</option>
+                <option value="other">其他成员</option>
+              </select>
+            </div>
+            
+            <!-- 日期选择 -->
+            <div>
+              <label for="date" class="block text-sm font-medium text-neutral-700 mb-1">日期</label>
+              <input type="date" id="date" 
+                class="w-full px-3 py-2 border border-neutral-300 rounded-lg input-focus transition-all duration-200">
+            </div>
+            
+            <!-- 提交按钮 -->
+            <button type="submit" 
+              class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors duration-200 flex items-center justify-center">
+              <i class="fa fa-save mr-2"></i>添加记录
+            </button>
+          </form>
+        </div>
+        
+        <!-- 操作按钮 -->
+        <div class="bg-white rounded-xl shadow-lg p-6 card-shadow card-hover animate-slide-up" style="animation-delay: 0.2s">
+          <h3 class="text-xl font-bold text-neutral-800 mb-4 flex items-center">
+            <i class="fa fa-cog text-primary mr-2"></i>操作选项
+          </h3>
+          <div class="grid grid-cols-2 gap-4">
+            <button id="save-all-btn" 
+              class="flex items-center justify-center space-x-2 px-4 py-3 bg-secondary text-white rounded-lg hover:bg-secondary/90 transition-colors duration-200">
+              <i class="fa fa-floppy-o"></i>
+              <span>保存所有</span>
+            </button>
+            <button id="reset-btn" 
+              class="flex items-center justify-center space-x-2 px-4 py-3 bg-danger text-white rounded-lg hover:bg-danger/90 transition-colors duration-200">
+              <i class="fa fa-refresh"></i>
+              <span>重置</span>
+            </button>
+            <button id="export-btn" 
+              class="flex items-center justify-center space-x-2 px-4 py-3 bg-neutral-600 text-white rounded-lg hover:bg-neutral-700 transition-colors duration-200 col-span-2">
+              <i class="fa fa-download"></i>
+              <span>导出数据 (CSV)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 右侧：图表和分析 -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- 财务摘要卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 animate-slide-up" style="animation-delay: 0.3s">
+          <div class="bg-white rounded-xl shadow-lg p-5 card-shadow card-hover border-l-4 border-primary">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-neutral-500 text-sm">本月总支出</p>
+                <h4 class="text-2xl font-bold mt-1" id="total-expenses">¥0.00</h4>
+              </div>
+              <div class="bg-primary/10 p-3 rounded-lg">
+                <i class="fa fa-money text-primary text-xl"></i>
+              </div>
+            </div>
+            <div class="mt-3 text-sm flex items-center">
+              <span class="text-danger flex items-center">
+                <i class="fa fa-arrow-up mr-1"></i>5.2%
+              </span>
+              <span class="text-neutral-500 ml-2">较上月</span>
+            </div>
+          </div>
+          
+          <div class="bg-white rounded-xl shadow-lg p-5 card-shadow card-hover border-l-4 border-secondary">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-neutral-500 text-sm">平均每日支出</p>
+                <h4 class="text-2xl font-bold mt-1" id="daily-average">¥0.00</h4>
+              </div>
+              <div class="bg-secondary/10 p-3 rounded-lg">
+                <i class="fa fa-calendar text-secondary text-xl"></i>
+              </div>
+            </div>
+            <div class="mt-3 text-sm flex items-center">
+              <span class="text-secondary flex items-center">
+                <i class="fa fa-arrow-down mr-1"></i>2.1%
+              </span>
+              <span class="text-neutral-500 ml-2">较上周</span>
+            </div>
+          </div>
+          
+          <div class="bg-white rounded-xl shadow-lg p-5 card-shadow card-hover border-l-4 border-warning">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-neutral-500 text-sm">超支类别</p>
+                <h4 class="text-2xl font-bold mt-1" id="overspent-category">无</h4>
+              </div>
+              <div class="bg-warning/10 p-3 rounded-lg">
+                <i class="fa fa-exclamation-triangle text-warning text-xl"></i>
+              </div>
+            </div>
+            <div class="mt-3 text-sm flex items-center">
+              <span class="text-warning flex items-center">
+                <i class="fa fa-arrow-up mr-1"></i>12.3%
+              </span>
+              <span class="text-neutral-500 ml-2">超出预算</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 图表区域 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- 饼图：分类支出 -->
+          <div class="bg-white rounded-xl shadow-lg p-6 card-shadow card-hover animate-slide-up" style="animation-delay: 0.4s">
+            <h3 class="text-xl font-bold text-neutral-800 mb-4 flex items-center">
+              <i class="fa fa-pie-chart text-primary mr-2"></i>按分类支出
+            </h3>
+            <div class="h-64">
+              <canvas id="category-chart"></canvas>
+            </div>
+          </div>
+          
+          <!-- 条形图：成员支出 -->
+          <div class="bg-white rounded-xl shadow-lg p-6 card-shadow card-hover animate-slide-up" style="animation-delay: 0.5s">
+            <h3 class="text-xl font-bold text-neutral-800 mb-4 flex items-center">
+              <i class="fa fa-users text-primary mr-2"></i>家庭成员支出
+            </h3>
+            <div class="h-64">
+              <canvas id="member-chart"></canvas>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 最近交易记录 -->
+        <div class="bg-white rounded-xl shadow-lg p-6 card-shadow card-hover animate-slide-up" style="animation-delay: 0.6s">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-neutral-800 flex items-center">
+              <i class="fa fa-history text-primary mr-2"></i>最近交易
+            </h3>
+            <a href="#transactions" class="text-primary hover:text-primary/80 text-sm font-medium transition-colors duration-200">
+              查看全部 <i class="fa fa-angle-right ml-1"></i>
+            </a>
+          </div>
+          
+          <div class="overflow-x-auto">
+            <table class="min-w-full">
+              <thead>
+                <tr class="border-b border-neutral-200">
+                  <th class="py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">描述</th>
+                  <th class="py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">分类</th>
+                  <th class="py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">成员</th>
+                  <th class="py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">日期</th>
+                  <th class="py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">金额</th>
+                </tr>
+              </thead>
+              <tbody id="recent-transactions" class="divide-y divide-neutral-200">
+                <!-- 交易记录将通过JavaScript动态添加 -->
+                <tr>
+                  <td colspan="5" class="py-8 text-center text-neutral-500">
+                    <i class="fa fa-inbox text-3xl mb-2 block"></i>
+                    暂无交易记录
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- 消费分析 -->
+        <div class="bg-white rounded-xl shadow-lg p-6 card-shadow card-hover animate-slide-up" style="animation-delay: 0.7s">
+          <h3 class="text-xl font-bold text-neutral-800 mb-4 flex items-center">
+            <i class="fa fa-bar-chart text-primary mr-2"></i>消费分析
+          </h3>
+          
+          <div id="expense-analysis" class="space-y-4">
+            <div class="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+              <p class="text-neutral-600">开始添加交易记录以获取消费分析...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-neutral-800 text-white py-8 mt-12">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div>
+          <h4 class="text-lg font-bold mb-4 flex items-center">
+            <i class="fa fa-home mr-2"></i>家庭财务助手
+          </h4>
+          <p class="text-neutral-400 text-sm">智能管理您的家庭财务，轻松记录和分析每一笔支出，让家庭预算更合理。</p>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-bold mb-4">快速链接</h4>
+          <ul class="space-y-2 text-neutral-400">
+            <li><a href="#" class="hover:text-white transition-colors duration-200">关于我们</a></li>
+            <li><a href="#" class="hover:text-white transition-colors duration-200">使用帮助</a></li>
+            <li><a href="#" class="hover:text-white transition-colors duration-200">隐私政策</a></li>
+            <li><a href="#" class="hover:text-white transition-colors duration-200">联系我们</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-bold mb-4">关注我们</h4>
+          <div class="flex space-x-4">
+            <a href="#" class="w-10 h-10 rounded-full bg-neutral-700 flex items-center justify-center hover:bg-primary transition-colors duration-200">
+              <i class="fa fa-weixin"></i>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-full bg-neutral-700 flex items-center justify-center hover:bg-primary transition-colors duration-200">
+              <i class="fa fa-weibo"></i>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-full bg-neutral-700 flex items-center justify-center hover:bg-primary transition-colors duration-200">
+              <i class="fa fa-qq"></i>
+            </a>
+          </div>
+          <p class="text-neutral-400 text-sm mt-4">订阅我们的财务小贴士</p>
+          <div class="mt-2 flex">
+            <input type="email" placeholder="您的邮箱" class="px-3 py-2 rounded-l-lg text-neutral-800 w-full focus:outline-none">
+            <button class="bg-primary px-4 py-2 rounded-r-lg hover:bg-primary/90 transition-colors duration-200">
+              <i class="fa fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-neutral-700 mt-8 pt-6 text-center text-neutral-500 text-sm">
+        <p>&copy; 2023 家庭财务助手 - 版权所有</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 通知提示框 -->
+  <div id="notification" class="fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 flex items-center max-w-sm hidden">
+    <i id="notification-icon" class="mr-3 text-xl"></i>
+    <span id="notification-message"></span>
+  </div>
+
+  <script>
+    // 初始化日期
+    document.addEventListener('DOMContentLoaded', function() {
+      const today = new Date();
+      const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+      document.getElementById('current-date').textContent = today.toLocaleDateString('zh-CN', options);
+      document.getElementById('date').valueAsDate = today;
+      
+      // 初始化图表
+      initCharts();
+      
+      // 移动端菜单切换
+      document.getElementById('mobile-menu-button').addEventListener('click', function() {
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenu.classList.toggle('hidden');
+      });
+      
+      // 语音输入功能
+      initVoiceInput();
+      
+      // 表单提交
+      document.getElementById('expense-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        addExpense();
+      });
+      
+      // 保存所有按钮
+      document.getElementById('save-all-btn').addEventListener('click', function() {
+        saveAllExpenses();
+      });
+      
+      // 重置按钮
+      document.getElementById('reset-btn').addEventListener('click', function() {
+        resetExpenses();
+      });
+      
+      // 导出按钮
+      document.getElementById('export-btn').addEventListener('click', function() {
+        exportToCSV();
+      });
+      
+      // 从本地存储加载数据
+      loadFromLocalStorage();
+    });
+    
+    // 全局变量
+    let expenses = [];
+    let categoryChart, memberChart;
+    
+    // 初始化图表
+    function initCharts() {
+      // 分类支出饼图
+      const categoryCtx = document.getElementById('category-chart').getContext('2d');
+      categoryChart = new Chart(categoryCtx, {
+        type: 'pie',
+        data: {
+          labels: [],
+          datasets: [{
+            data: [],
+            backgroundColor: [
+              '#165DFF', '#36D399', '#FF9F43', '#F87171', 
+              '#A78BFA', '#60A5FA', '#EC4899', '#FBBF24'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                boxWidth: 12,
+                padding: 15
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const value = context.raw;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = ((value / total) * 100).toFixed(1);
+                  return `${context.label}: ¥${value} (${percentage}%)`;
+                }
+              }
+            }
+          },
+          animation: {
+            animateScale: true,
+            animateRotate: true
+          }
+        }
+      });
+      
+      // 成员支出条形图
+      const memberCtx = document.getElementById('member-chart').getContext('2d');
+      memberChart = new Chart(memberCtx, {
+        type: 'bar',
+        data: {
+          labels: [],
+          datasets: [{
+            label: '支出金额',
+            data: [],
+            backgroundColor: '#165DFF',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return '¥' + value;
+                }
+              }
+            }
+          },
+          animation: {
+            duration: 1000
+          }
+        }
+      });
+    }
+    
+    // 更新图表数据
+    function updateCharts() {
+      // 按分类汇总
+      const categoryData = {};
+      expenses.forEach(expense => {
+        const categoryName = getCategoryName(expense.category);
+        if (!categoryData[categoryName]) {
+          categoryData[categoryName] = 0;
+        }
+        categoryData[categoryName] += parseFloat(expense.amount);
+      });
+      
+      // 更新分类饼图
+      categoryChart.data.labels = Object.keys(categoryData);
+      categoryChart.data.datasets[0].data = Object.values(categoryData);
+      categoryChart.update();
+      
+      // 按成员汇总
+      const memberData = {};
+      expenses.forEach(expense => {
+        const memberName = getMemberName(expense.member);
+        if (!memberData[memberName]) {
+          memberData[memberName] = 0;
+        }
+        memberData[memberName] += parseFloat(expense.amount);
+      });
+      
+      // 更新成员条形图
+      memberChart.data.labels = Object.keys(memberData);
+      memberChart.data.datasets[0].data = Object.values(memberData);
+      memberChart.update();
+    }
+    
+    // 添加新支出
+    function addExpense() {
+      const amount = document.getElementById('amount').value;
+      const description = document.getElementById('description').value;
+      const category = document.getElementById('category').value;
+      const member = document.getElementById('member').value;
+      const date = document.getElementById('date').value;
+      
+      if (!amount || !category) {
+        showNotification('请填写金额和分类', 'error');
+        return;
+      }
+      
+      const newExpense = {
+        id: Date.now(),
+        amount,
+        description,
+        category,
+        member,
+        date
+      };
+      
+      expenses.push(newExpense);
+      
+      // 更新UI
+      updateExpenseUI();
+      
+      // 重置表单
+      document.getElementById('expense-form').reset();
+      document.getElementById('date').valueAsDate = new Date();
+      
+      showNotification('支出记录已添加', 'success');
+    }
+    
+    // 更新支出相关UI
+    function updateExpenseUI() {
+      // 更新最近交易列表
+      updateRecentTransactions();
+      
+      // 更新图表
+      updateCharts();
+      
+      // 更新财务摘要
+      updateFinancialSummary();
+      
+      // 更新消费分析
+      updateExpenseAnalysis();
+    }
+    
+    // 更新最近交易列表
+    function updateRecentTransactions() {
+      const transactionsContainer = document.getElementById('recent-transactions');
+      transactionsContainer.innerHTML = '';
+      
+      if (expenses.length === 0) {
+        transactionsContainer.innerHTML = `
+          <tr>
+            <td colspan="5" class="py-8 text-center text-neutral-500">
+              <i class="fa fa-inbox text-3xl mb-2 block"></i>
+              暂无交易记录
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      // 按日期排序，最新的在前
+      const sortedExpenses = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date));
+      
+      // 只显示最近5条
+      const recentExpenses = sortedExpenses.slice(0, 5);
+      
+      recentExpenses.forEach(expense => {
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-neutral-50 transition-colors duration-150';
+        
+        const formattedDate = new Date(expense.date).toLocaleDateString('zh-CN');
+        
+        row.innerHTML = `
+          <td class="py-4">
+            <div class="font-medium">${expense.description || '无描述'}</div>
+          </td>
+          <td class="py-4">
+            <span class="px-2 py-1 text-xs rounded-full ${getCategoryColorClass(expense.category)}">
+              ${getCategoryName(expense.category)}
+            </span>
+          </td>
+          <td class="py-4">${getMemberName(expense.member)}</td>
+          <td class="py-4">${formattedDate}</td>
+          <td class="py-4 text-right font-medium">¥${parseFloat(expense.amount).toFixed(2)}</td>
+        `;
+        
+        transactionsContainer.appendChild(row);
+      });
+    }
+    
+    // 更新财务摘要
+    function updateFinancialSummary() {
+      // 计算总支出
+      const total = expenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+      document.getElementById('total-expenses').textContent = `¥${total.toFixed(2)}`;
+      
+      // 计算平均每日支出（假设本月）
+      if (expenses.length > 0) {
+        const firstDate = new Date(Math.min(...expenses.map(e => new Date(e.date))));
+        const lastDate = new Date(Math.max(...expenses.map(e => new Date(e.date))));
+        const days = Math.ceil((lastDate - firstDate) / (1000 * 60 * 60 * 24)) + 1;
+        const dailyAverage = total / days;
+        document.getElementById('daily-average').textContent = `¥${dailyAverage.toFixed(2)}`;
+      } else {
+        document.getElementById('daily-average').textContent = '¥0.00';
+      }
+      
+      // 检查超支类别（简单模拟）
+      checkOverspentCategories();
+    }
+    
+    // 检查超支类别
+    function checkOverspentCategories() {
+      // 这里简单模拟预算检查，实际应用中应该从用户设置的预算中读取
+      const budgets = {
+        food: 1500,
+        transport: 500,
+        healthcare: 300,
+        utilities: 800,
+        subscriptions: 200,
+        household: 400,
+        entertainment: 600,
+        other: 500
+      };
+      
+      // 按分类汇总
+      const categoryTotals = {};
+      expenses.forEach(expense => {
+        if (!categoryTotals[expense.category]) {
+          categoryTotals[expense.category] = 0;
+        }
+        categoryTotals[expense.category] += parseFloat(expense.amount);
+      });
+      
+      // 检查是否超支
+      let overspentCategory = null;
+      for (const [category, total] of Object.entries(categoryTotals)) {
+        if (total > budgets[category]) {
+          overspentCategory = category;
+          break;
+        }
+      }
+      
+      if (overspentCategory) {
+        document.getElementById('overspent-category').textContent = getCategoryName(overspentCategory);
+      } else {
+        document.getElementById('overspent-category').textContent = '无';
+      }
+    }
+    
+    // 更新消费分析
+    function updateExpenseAnalysis() {
+      const analysisContainer = document.getElementById('expense-analysis');
+      
+      if (expenses.length === 0) {
+        analysisContainer.innerHTML = `
+          <div class="p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+            <p class="text-neutral-600">开始添加交易记录以获取消费分析...</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // 分析内容
+      let analysisHTML = '';
+      
+      // 1. 最大支出类别
+      const categoryTotals = {};
+      expenses.forEach(expense => {
+        if (!categoryTotals[expense.category]) {
+          categoryTotals[expense.category] = 0;
+        }
+        categoryTotals[expense.category] += parseFloat(expense.amount);
+      });
+      
+      const maxCategory = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0];
+      
+      analysisHTML += `
+        <div class="p-4 bg-primary/5 rounded-lg border border-primary/20">
+          <h4 class="font-semibold text-neutral-800 mb-2">主要支出方向</h4>
+          <p class="text-neutral-700">您在 <span class="font-medium text-primary">${getCategoryName(maxCategory[0])}</span> 上的支出最多，占总支出的 
+          <span class="font-medium text-primary">${((maxCategory[1] / expenses.reduce((s, e) => s + parseFloat(e.amount), 0)) * 100).toFixed(1)}%</span>。</p>
+        </div>
+      `;
+      
+      // 2. 超支警告
+      const budgets = {
+        food: 1500,
+        transport: 500,
+        healthcare: 300,
+        utilities: 800,
+        subscriptions: 200,
+        household: 400,
+        entertainment: 600,
+        other: 500
+      };
+      
+      const overspentCategories = Object.entries(categoryTotals)
+        .filter(([category, total]) => total > budgets[category]);
+      
+      if (overspentCategories.length > 0) {
+        analysisHTML += `
+          <div class="p-4 bg-danger/5 rounded-lg border border-danger/20">
+            <h4 class="font-semibold text-neutral-800 mb-2">超支警告</h4>
+            <p class="text-neutral-700">以下类别超出预算：</p>
+            <ul class="mt-2 space-y-1">
+        `;
+        
+        overspentCategories.forEach(([category, total]) => {
+          const overAmount = total - budgets[category];
+          const overPercentage = ((overAmount / budgets[category]) * 100).toFixed(1);
+          
+          analysisHTML += `
+            <li class="flex items-center text-danger">
+              <i class="fa fa-exclamation-circle mr-2"></i>
+              <span>${getCategoryName(category)}: 超出 ¥${overAmount.toFixed(2)} (${overPercentage}%)</span>
+            </li>
+          `;
+        });
+        
+        analysisHTML += `
+            </ul>
+          </div>
+        `;
+      }
+      
+      // 3. 消费建议
+      analysisHTML += `
+        <div class="p-4 bg-secondary/5 rounded-lg border border-secondary/20">
+          <h4 class="font-semibold text-neutral-800 mb-2">消费建议</h4>
+          <p class="text-neutral-700">
+            ${overspentCategories.length > 0 ? 
+              '考虑减少超支类别的非必要开支，重新分配预算。' : 
+              '您的消费情况良好，继续保持！'}
+            尝试每周制定购物清单，避免冲动消费。
+          </p>
+        </div>
+      `;
+      
+      analysisContainer.innerHTML = analysisHTML;
+    }
+    
+    // 初始化语音输入
+    function initVoiceInput() {
+      const voiceBtn = document.getElementById('voice-input-btn');
+      const voiceStatus = document.getElementById('voice-status');
+      
+      // 检查浏览器是否支持语音识别
+      if (!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+        voiceBtn.disabled = true;
+        voiceBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        return;
+      }
+      
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      
+      // 配置识别
+      recognition.lang = 'zh-CN';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      
+      // 语音识别开始
+      voiceBtn.addEventListener('click', function() {
+        try {
+          recognition.start();
+          voiceBtn.disabled = true;
+          voiceBtn.classList.add('bg-neutral-200', 'text-neutral-500');
+          voiceBtn.classList.remove('bg-primary/10', 'text-primary', 'hover:bg-primary/20');
+          voiceStatus.classList.remove('hidden');
+          showNotification('正在聆听，请说出您的支出...', 'info');
+        } catch (e) {
+          showNotification('语音识别启动失败，请重试', 'error');
+        }
+      });
+      
+      // 识别成功
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        processVoiceInput(transcript);
+        
+        voiceBtn.disabled = false;
+        voiceBtn.classList.remove('bg-neutral-200', 'text-neutral-500');
+        voiceBtn.classList.add('bg-primary/10', 'text-primary', 'hover:bg-primary/20');
+        voiceStatus.classList.add('hidden');
+        showNotification('语音输入已处理', 'success');
+      };
+      
+      // 识别结束
+      recognition.onend = function() {
+        voiceBtn.disabled = false;
+        voiceBtn.classList.remove('bg-neutral-200', 'text-neutral-500');
+        voiceBtn.classList.add('bg-primary/10', 'text-primary', 'hover:bg-primary/20');
+        voiceStatus.classList.add('hidden');
+      };
+      
+      // 识别错误
+      recognition.onerror = function(event) {
+        console.error('语音识别错误:', event.error);
+        voiceBtn.disabled = false;
+        voiceBtn.classList.remove('bg-neutral-200', 'text-neutral-500');
+        voiceBtn.classList.add('bg-primary/10', 'text-primary', 'hover:bg-primary/20');
+        voiceStatus.classList.add('hidden');
+        
+        let errorMessage = '语音识别出错';
+        if (event.error === 'not-allowed') {
+          errorMessage = '请允许麦克风权限';
+        }
+        showNotification(errorMessage, 'error');
+      };
+    }
+    
+    // 处理语音输入
+    function processVoiceInput(text) {
+      // 简单的语音解析逻辑
+      // 示例: "今天买了30元的水果，我支付的"
+      
+      // 提取金额
+      const amountMatch = text.match(/(\d+(\.\d+)?)元/);
+      if (amountMatch && amountMatch[1]) {
+        document.getElementById('amount').value = amountMatch[1];
+      }
+      
+      // 提取描述
+      const description = text.replace(/(\d+(\.\d+)?)元/, '').trim();
+      if (description) {
+        document.getElementById('description').value = description;
+      }
+      
+      // 尝试自动分类
+      const categories = {
+        '食品': ['吃', '喝', '餐厅', '超市', '蔬菜', '水果', '零食', '米', '面'],
+        '交通': ['公交', '地铁', '出租车', '油', '停车', '高速', '火车', '飞机'],
+        '医疗保健': ['药', '医院', '医生', '诊所', '保健', '医疗'],
+        '公用事业': ['电', '水', '气', '网', '电话', '物业'],
+        '数字订阅': ['会员', '订阅', '视频', '音乐', '游戏'],
+        '家居用品': ['家居', '家具', '电器', '用品', '清洁'],
+        '娱乐': ['电影', 'KTV', '旅游', '玩', '娱乐']
+      };
+      
+      for (const [categoryKey, keywords] of Object.entries(categories)) {
+        for (const keyword of keywords) {
+          if (text.includes(keyword)) {
+            const categoryValue = Object.keys(categories).find(k => categories[k] === keywords);
+            document.getElementById('category').value = getCategoryKey(categoryValue);
+            return;
+          }
+        }
+      }
+    }
+    
+    // 保存所有数据到本地存储
+    function saveAllExpenses() {
+      localStorage.setItem('familyExpenses', JSON.stringify(expenses));
+      showNotification('所有数据已保存', 'success');
+    }
+    
+    // 从本地存储加载数据
+    function loadFromLocalStorage() {
+      const savedExpenses = localStorage.getItem('familyExpenses');
+      if (savedExpenses) {
+        expenses = JSON.parse(savedExpenses);
+        updateExpenseUI();
+        showNotification('已加载保存的数据', 'info');
+      }
+    }
+    
+    // 重置所有数据
+    function resetExpenses() {
+      if (confirm('确定要清除所有记录吗？此操作不可恢复。')) {
+        expenses = [];
+        localStorage.removeItem('familyExpenses');
+        updateExpenseUI();
+        showNotification('所有记录已清除', 'info');
+      }
+    }
+    
+    // 导出为CSV
+    function exportToCSV() {
+      if (expenses.length === 0) {
+        showNotification('没有数据可导出', 'warning');
+        return;
+      }
+      
+      // 构建CSV内容
+      let csvContent = "描述,分类,成员,日期,金额\n";
+      
+      expenses.forEach(expense => {
+        const row = [
+          `"${expense.description || ''}"`,
+          `"${getCategoryName(expense.category)}"`,
+          `"${getMemberName(expense.member)}"`,
+          `"${expense.date}"`,
+          `"${expense.amount}"`
+        ];
+        csvContent += row.join(',') + "\n";
+      });
+      
+      // 创建下载链接
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      
+      const today = new Date().toLocaleDateString('zh-CN').replace(/\//g, '-');
+      link.setAttribute('download', `家庭支出记录_${today}.csv`);
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      showNotification('数据已导出为CSV文件', 'success');
+    }
+    
+    // 显示通知
+    function showNotification(message, type = 'info') {
+      const notification = document.getElementById('notification');
+      const notificationIcon = document.getElementById('notification-icon');
+      const notificationMessage = document.getElementById('notification-message');
+      
+      // 设置消息和图标
+      notificationMessage.textContent = message;
+      
+      // 移除之前的图标类
+      notificationIcon.className = '';
+      
+      // 设置图标和样式
+      switch (type) {
+        case 'success':
+          notificationIcon.className = 'fa fa-check-circle text-secondary';
+          notification.className = 'fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-lg bg-white border-l-4 border-secondary transform translate-y-0 opacity-100 transition-all duration-300 flex items-center max-w-sm';
+          break;
+        case 'error':
+          notificationIcon.className = 'fa fa-times-circle text-danger';
+          notification.className = 'fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-lg bg-white border-l-4 border-danger transform translate-y-0 opacity-100 transition-all duration-300 flex items-center max-w-sm';
+          break;
+        case 'warning':
+          notificationIcon.className = 'fa fa-exclamation-circle text-warning';
+          notification.className = 'fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-lg bg-white border-l-4 border-warning transform translate-y-0 opacity-100 transition-all duration-300 flex items-center max-w-sm';
+          break;
+        case 'info':
+        default:
+          notificationIcon.className = 'fa fa-info-circle text-primary';
+          notification.className = 'fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-lg bg-white border-l-4 border-primary transform translate-y-0 opacity-100 transition-all duration-300 flex items-center max-w-sm';
+          break;
+      }
+      
+      // 3秒后隐藏通知
+      setTimeout(() => {
+        notification.className = 'fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 flex items-center max-w-sm hidden';
+      }, 3000);
+    }
+    
+    // 辅助函数：获取分类名称
+    function getCategoryName(categoryKey) {
+      const categories = {
+        'food': '食品',
+        'transport': '交通',
+        'healthcare': '医疗保健',
+        'utilities': '公用事业',
+        'subscriptions': '数字订阅',
+        'household': '家居用品',
+        'entertainment': '娱乐',
+        'other': '其他'
+      };
+      return categories[categoryKey] || categoryKey;
+    }
+    
+    // 辅助函数：获取分类键
+    function getCategoryKey(categoryName) {
+      const categories = {
+        '食品': 'food',
+        '交通': 'transport',
+        '医疗保健': 'healthcare',
+        '公用事业': 'utilities',
+        '数字订阅': 'subscriptions',
+        '家居用品': 'household',
+        '娱乐': 'entertainment',
+        '其他': 'other'
+      };
+      return categories[categoryName] || 'other';
+    }
+    
+    // 辅助函数：获取成员名称
+    function getMemberName(memberKey) {
+      const members = {
+        'me': '我',
+        'spouse': '配偶',
+        'child1': '孩子1',
+        'child2': '孩子2',
+        'other': '其他成员'
+      };
+      return members[memberKey] || memberKey;
+    }
+    
+    // 辅助函数：获取分类颜色类
+    function getCategoryColorClass(category) {
+      const colors = {
+        'food': 'bg-green-100 text-green-800',
+        'transport': 'bg-blue-100 text-blue-800',
+        'healthcare': 'bg-purple-100 text-purple-800',
+        'utilities': 'bg-yellow-100 text-yellow-800',
+        'subscriptions': 'bg-pink-100 text-pink-800',
+        'household': 'bg-indigo-100 text-indigo-800',
+        'entertainment': 'bg-red-100 text-red-800',
+        'other': 'bg-gray-100 text-gray-800'
+      };
+      return colors[category] || 'bg-gray-100 text-gray-800';
+    }
+  </script>
 </body>
 </html>
+
